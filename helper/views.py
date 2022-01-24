@@ -14,14 +14,14 @@ class ProcessView(APIView):
     def post_process(self,data):
         return data
 
-    @gs_task(task_id)
-    def handle_request(self, request) : 
-        input  = self.pre_process(request.data, request.headers)
+    def handle_request(self, data, headers) : 
+        input  = self.pre_process(data, headers)
         output = self.process(input)
         return self.post_process(output)
 
     def post(self,request):
-        response  = self.handle_request(request)
+        gs_func = gs_task(self.task_id)(self.handle_request)
+        response  = gs_func(request.data, request.headers)
         if not response.get("success",True): 
             return JsonResponse(response, status = 400)
         else : 
