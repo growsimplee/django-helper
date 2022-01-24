@@ -47,14 +47,11 @@ class FetchView(ProcessView):
         The paginator instance associated with the view, or `None`.
         """
         if not hasattr(self, '_paginator'):
-            if self.pagination_class is None:
-                self._paginator = None
-            else:
-                class StandardPagesPagination(PageNumberPagination):
-                    page_size = self.page_size
-                    page_size_query_param = self.page_size_query_param
-                    max_page_size = self.max_page_size
-                self._paginator = StandardPagesPagination()
+            class StandardPagesPagination(PageNumberPagination):
+                page_size = self.page_size
+                page_size_query_param = self.page_size_query_param
+                max_page_size = self.max_page_size
+            self._paginator = StandardPagesPagination()
         return self._paginator
 
     def paginate_queryset(self, queryset):
@@ -67,15 +64,15 @@ class FetchView(ProcessView):
 
     def process(self,data):
         pagination  = data.pop("pagination",False)
-        queryset = self.dbctl.fetch(**data)
+        queryset = self.dbctl.fetch(**data).order_by()
         response = {"sucess":True}
         if pagination:
             page = self.paginate_queryset(queryset)
             num_pages = self.paginator.page.paginator.num_pages
-            response["results"] = self.serializer(page, many=True)
+            response["results"] = self.serializer(page, many=True).data
             response["pages"] = num_pages
         else : 
-            response = {"results" : self.serialzer(queryset,many=True)}
+            response = {"results" : self.serializer(queryset,many=True).data}
         return response
 
 
