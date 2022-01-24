@@ -17,7 +17,8 @@ setup(
     url='https://github.com/growsimplee/django-helper',
     install_requires=[
         "boto3>=1.16.35",
-        "Django>=3.1"
+        "Django>=3.1",
+        "djangorestframework>=3.12"
     ],
     classifiers=[
         'Intended Audience :: Developers',
