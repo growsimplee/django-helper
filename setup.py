@@ -8,7 +8,7 @@ README = open(os.path.join(here, 'README.md')).read()
 setup(
     name='django-helper',
     version=VERSION,
-    package_dir={'': 'src'},
+    package_dir={'helper': 'helper'},
     include_package_data=True,
     packages=find_packages(),
     description='Django Helper module for standardizing microservices',
