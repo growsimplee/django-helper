@@ -1,7 +1,7 @@
 import traceback
 import time
 import logging
-from .settings import ERROR_QUEUE, SERVICE_NAME, AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY, AWS_REGION
+from .settings import ERROR_QUEUE, SERVICE_NAME, AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY, AWS_REGION, ERROR_CODES
 import boto3
 import json
 
@@ -34,7 +34,7 @@ def gs_task(task_id):
             "input": f"{args},{kwargs}"
         }
         response = queue2.send_message(MessageBody=json.dumps(data),MessageGroupId=SERVICE_NAME,  MessageAttributes={'errorType': {"StringValue":f"{SERVICE_NAME}","DataType":"String"}})
-        return {"success":False}
+        return {"success":False,"exception" : str(exception), "code": ERROR_CODES.get(type(exception).__name__,50000)}
 
     def completion_handler(end,start):
         logger.info(f"{task_id} execution completed in {(end-start)*1000} ms")

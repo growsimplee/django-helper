@@ -9,3 +9,5 @@ AWS_SECRET_ACCESS_KEY = getattr(settings, 'EB_SECRET_ACCESS_KEY', '')
 
 ERROR_QUEUE = getattr(settings, 'ERROR_QUEUE', 'error.fifo') 
 SERVICE_NAME = getattr(settings, 'SERVICE_NAME', '') 
+
+ERROR_CODES = getattr(settings, 'ERROR_CODES', {})
