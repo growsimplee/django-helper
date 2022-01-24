@@ -34,7 +34,6 @@ def gs_task(task_id):
             "input": f"{args},{kwargs}"
         }
         response = queue2.send_message(MessageBody=json.dumps(data),MessageGroupId=SERVICE_NAME,  MessageAttributes={'errorType': {"StringValue":f"{SERVICE_NAME}","DataType":"String"}})
-        logger.error(traceback.format_exc())
         return {"success":False}
 
     def completion_handler(end,start):
