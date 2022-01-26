@@ -4,6 +4,8 @@ import logging
 from .settings import ERROR_QUEUE, SERVICE_NAME, AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY, AWS_REGION, ERROR_CODES
 import boto3
 import json
+import json
+from functools import lru_cache,wraps
 
 logger  = logging.getLogger("django")
 
@@ -43,4 +45,32 @@ def gs_task(task_id):
         return base_handler(func,error_handler,completion_handler)
 
     return base_wrapper
+
+def simple_gs_cache(maxsize):
+    def hashable_lru(func):
+        cache = lru_cache(maxsize=maxsize)
+
+        def deserialise(value):
+            try:
+                return json.loads(value)
+            except Exception:
+                return value
+
+        def func_with_serialized_params(*args, **kwargs):
+            _args = tuple([deserialise(arg) for arg in args])
+            _kwargs = {k: deserialise(v) for k, v in kwargs.items()}
+            return func(*_args, **_kwargs)
+
+        cached_function = cache(func_with_serialized_params)
+
+        @wraps(func)
+        def lru_decorator(*args, **kwargs):
+            _args = tuple([json.dumps(arg, sort_keys=True) if type(arg) in (list, dict) else arg for arg in args])
+            _kwargs = {k: json.dumps(v, sort_keys=True) if type(v) in (list, dict) else v for k, v in kwargs.items()}
+            return cached_function(*_args, **_kwargs)
+        lru_decorator.cache_info = cached_function.cache_info
+        lru_decorator.cache_clear = cached_function.cache_clear
+        return lru_decorator
+    
+    return hashable_lru
 

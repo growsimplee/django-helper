@@ -34,12 +34,31 @@ Write fast DB fetching with error handling, search, filter, pagination
 ### Standard database controller
 With all features for search, filter, aggregation, bulk create, bulk update or create
 
+### Simple In Memory Cache 
+Easily implementable cache with decorators. 
+
 ## Examples
+
+### Implement simple caching
+```
+from helpers.decorators import simple_gs_cache
+@simple_gs_cache(128)
+def fib(n):
+    print("actually running )
+    if n in [0,1]:
+        return n
+    else :
+        return fib(n-1) + fib(n-2)
+
+fib(5) ## will actually compute
+fib(4) ## wont be computed
+```
 
 ### Quickly write a search and filter view with pagination for a model
 ```
 from helper.dbctl import BaseDbctl as dbctl 
 from helper.views import FetchView
+
 class StockDbctl(dbctl):
         model = Stock
         search_fields = ["product__sku_id", "product__name", "product__category", "warehouse__warehouse_id", "warehouse__warehouse_name"]
@@ -53,5 +72,6 @@ class StockPageView(FetchView):
         data["filters"] = data.get("filters", {})
         data["filters"]["product__user_id"] = headers["orgId"]
         return data
+
 ```
 
