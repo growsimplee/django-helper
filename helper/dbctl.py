@@ -64,7 +64,7 @@ class BaseDbctl:
             if x != len(self.id_key_columns)-1:
                 concat_policy.append(Value("-")) 
         for data in obj_data_array:
-            key = [str(int(data[x])) if x in self.int_key_columns else data[x] for x in self.id_key_columns ].join("-")
+            key = "-".join([str(int(float(data[x]))) if x in self.int_key_columns else data[x] for x in self.id_key_columns ])
             mapping[key] = data
         with transaction.atomic():
             existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}

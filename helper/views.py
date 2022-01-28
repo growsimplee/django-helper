@@ -7,7 +7,7 @@ class ProcessView(APIView):
     task_id = None
 
     def pre_process(self,data,headers):
-        return data.update(headers)
+        return data
     
     def process(self,data):
         return data
