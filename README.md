@@ -1,7 +1,7 @@
 # Django Helper Package
 
 ## Motivation 
-This package is designed for DRY by standardizing common practices required for django microservices powered by AWS.
+This package is designed for DRY by standardizing common practices required for django microservices powered by AWS. Updated.
 
 ## Django Settings Variables
 EB_AWS_REGION
