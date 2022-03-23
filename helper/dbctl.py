@@ -44,7 +44,7 @@ class BaseDbctl:
     def save(self, **kwargs):
         obj = self.model.objects.create(**kwargs)
         obj.save()
-        logger.info(f'{self.name} object saved {obj}')
+        logger.info(f'object saved {obj}')
         return obj
 
     def bulk_create(self, obj_data_array):
