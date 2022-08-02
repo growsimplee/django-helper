@@ -83,4 +83,14 @@ class FetchView(ProcessUserView):
             response = {"results": self.serializer(queryset, many=True).data}
         return response
 
+class UpsertView(ProcessView):
+    dbctl = None
 
+    def process(self, data):
+        operation_type = data.get("type")
+        payload = data["payload"]
+        if operation_type == "bulk_update_or_create":
+            return {"success":True, "response":self.dbctl.bulk_update_or_create(payload)}
+        if operation_type == "update":
+            self.dbctl.common_update(**payload)
+            return {"success":True}   

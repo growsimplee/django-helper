@@ -83,3 +83,22 @@ class BaseDbctl:
                 updated = self.model.objects.bulk_update(update_objs,update_fields.keys())
             logger.info(f"{str(self.model)} Created : {len(created)}, Updated: {len(update_objs)}")
             return {"created": len(created), "updated": len(update_objs)}
+    
+    def bulk_create_missing(self, obj_data_array):
+        mapping = {}
+        concat_policy  = []
+        for x in range(len(self.id_key_columns)): 
+            concat_policy.append(self.id_key_columns[x])
+            if x != len(self.id_key_columns)-1:
+                concat_policy.append(Value("-")) 
+        for data in obj_data_array:
+            key = "-".join([(str(int(float(data[x]))) if data[x] else "")if x in self.int_key_columns else data[x] for x in self.id_key_columns ])
+            mapping[key] = data
+        with transaction.atomic():
+            existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}
+            create_objs = [
+                self.model(**v) for k, v in mapping.items() if k not in existing
+            ]
+            created = self.model.objects.bulk_create(create_objs, ignore_conflicts= True)
+            logger.info(f"{str(self.model)} Created : {len(created)}, Existing: {len(existing.keys())}")
+            return {"created": len(created), "existing": len(existing.keys())}
