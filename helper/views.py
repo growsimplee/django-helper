@@ -94,3 +94,9 @@ class UpsertView(ProcessView):
         if operation_type == "update":
             self.dbctl.common_update(**payload)
             return {"success":True}   
+        if operation_type == "bulk_create":
+            created = self.dbctl.bulk_create(payload)
+            return {"success":True, "created": len(created)}
+        if operation_type == "create_missing":
+            return {"success":True, "response": self.dbctl.bulk_create_missing(payload)}
+        return {"success":False, "error": "Unknown request type"}
