@@ -102,9 +102,10 @@ class BaseDbctl:
             mapping[key] = data
         with transaction.atomic():
             if len(concat_policy)== 1:
-                existing = {obj.unique_id: obj for obj in self.model.objects.annotate(
+                _existing = {obj.unique_id: obj for obj in self.model.objects.annotate(
                     unique_id=F(concat_policy[0])).filter(
                     unique_id__in=list(mapping.keys()))}
+                existing = {str(k): v for k, v in _existing.items()}
             else:
                 existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}
             create_objs = [
