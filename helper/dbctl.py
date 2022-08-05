@@ -1,7 +1,7 @@
 import logging
 import re
 from django.contrib.postgres.search import SearchVector
-from django.db.models import Sum,Count,Value
+from django.db.models import Sum,Count,Value,F
 from django.db.models import CharField
 from django.db.models.functions import Concat
 from django.db import transaction
@@ -66,7 +66,13 @@ class BaseDbctl:
             key = "-".join([(str(int(float(data[x]))) if data[x] else "")if x in self.int_key_columns else data[x] for x in self.id_key_columns ])
             mapping[key] = data
         with transaction.atomic():
-            existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}
+            if len(concat_policy)== 1:
+                existing = {obj.unique_id: obj for obj in self.model.objects.annotate(
+                    unique_id=F(concat_policy[0])).filter(
+                    unique_id__in=list(mapping.keys()))}
+            else:
+                existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}
+
             create_objs = [
                 self.model(**v) for k, v in mapping.items() if k not in existing
             ]
@@ -95,7 +101,12 @@ class BaseDbctl:
             key = "-".join([(str(int(float(data[x]))) if data[x] else "")if x in self.int_key_columns else data[x] for x in self.id_key_columns ])
             mapping[key] = data
         with transaction.atomic():
-            existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}
+            if len(concat_policy)== 1:
+                existing = {obj.unique_id: obj for obj in self.model.objects.annotate(
+                    unique_id=F(concat_policy[0])).filter(
+                    unique_id__in=list(mapping.keys()))}
+            else:
+                existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}
             create_objs = [
                 self.model(**v) for k, v in mapping.items() if k not in existing
             ]
