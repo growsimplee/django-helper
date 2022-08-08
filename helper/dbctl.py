@@ -97,15 +97,21 @@ class BaseDbctl:
             concat_policy.append(self.id_key_columns[x])
             if x != len(self.id_key_columns)-1:
                 concat_policy.append(Value("-")) 
+        first_id_key = self.id_key_columns[0]
         for data in obj_data_array:
-            key = "-".join([(str(int(float(data[x]))) if data[x] else "")if x in self.int_key_columns else data[x] for x in self.id_key_columns ])
+            
+            if len(self.id_key_columns) > 1: 
+                key = "-".join([(str(int(float(data[x]))) if data[x] else "")if x in self.int_key_columns else data[x] for x in self.id_key_columns ]) 
+            else :
+                key = int(float(data[first_id_key])) if self.int_key_columns else data[first_id_key]
             mapping[key] = data
         with transaction.atomic():
             if len(concat_policy)== 1:
-                _existing = {obj.unique_id: obj for obj in self.model.objects.annotate(
-                    unique_id=F(concat_policy[0])).filter(
-                    unique_id__in=list(mapping.keys()))}
-                existing = {str(k): v for k, v in _existing.items()}
+                existing = {obj.__dict__[first_id_key] : obj for obj in  self.model.objects.filter({f"{first_id_key}__in" : mapping.keys()})}
+                # _existing = {obj.unique_id: obj for obj in self.model.objects.annotate(
+                #     unique_id=F(concat_policy[0])).filter(
+                #     unique_id__in=list(mapping.keys()))}
+                # existing = {str(k): v for k, v in _existing.items()}
             else:
                 existing = {obj.unique_id:obj for obj in self.model.objects.annotate(unique_id = Concat(*concat_policy, output_field=CharField(max_length= 1024))).filter(unique_id__in = list(mapping.keys()))}
             create_objs = [
