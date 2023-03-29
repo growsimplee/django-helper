@@ -72,8 +72,8 @@ class FetchView(ProcessUserView):
 
     def process(self, data):
         pagination = data.pop("pagination", False)
-        sort_key = data.pop("sort_by", "-pk")
-        queryset = self.dbctl.fetch(**data).order_by(sort_key)
+        sort_key = data.pop("sort_by", ["-pk"])
+        queryset = self.dbctl.fetch(**data).order_by(*sort_key)
         response = {"sucess": True}
         if pagination:
             page = self.paginate_queryset(queryset)
