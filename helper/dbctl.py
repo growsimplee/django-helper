@@ -5,6 +5,7 @@ from django.db.models import Sum,Count,Value,F
 from django.db.models import CharField
 from django.db.models.functions import Concat
 from django.db import transaction
+from django.db.models import Q
 
 logger = logging.getLogger('django')
 
@@ -25,11 +26,16 @@ class BaseDbctl:
     def fetch(self, filters={}, exclude= {}, term=None): 
         queryset = self.model.objects.filter(**filters).exclude(**exclude)
         if term:
-            if(bool(re.match('^[a-zA-Z0-9]*$',term))==True):
-                search_filters = {"search__icontains":term}
-            else:
-                search_filters = {"search":re.escape(term)}
-            return queryset.annotate(search=SearchVector(*self.search_fields)).filter(**search_filters)
+            search_query = Q()
+            words = term.split(",")
+            for word in words:
+                search_query = search_query | Q(search__icontains = word)
+            return queryset.annotate(search = SearchVector(*self.search_fields)).filter(search_query)
+            # if(bool(re.match('^[a-zA-Z0-9]*$',term))==True):
+            #     search_filters = {"search__icontains":term}
+            # else:
+            #     search_filters = {"search":re.escape(term)}
+            # return queryset.annotate(search=SearchVector(*self.search_fields)).filter(**search_filters)
         else :
             return queryset
     
