@@ -76,10 +76,12 @@ class FetchView(ProcessUserView):
         queryset = self.dbctl.fetch(**data).order_by(*sort_key)
         response = {"sucess": True}
         if pagination:
+            count = queryset.count()
             page = self.paginate_queryset(queryset)
             num_pages = self.paginator.page.paginator.num_pages
             response["results"] = self.serializer(page, many=True).data
             response["pages"] = num_pages
+            response["count"] = count
         else:
             response = {"results": self.serializer(queryset, many=True).data}
         return response
